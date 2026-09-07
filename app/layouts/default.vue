@@ -81,8 +81,12 @@ async function signOut() {
             <UIcon name="i-lucide-landmark" class="size-6" />
           </div>
           <div class="hidden sm:block">
-            <p class="font-semibold text-highlighted">University IS</p>
-            <p class="text-xs text-muted">Information system</p>
+            <p class="font-semibold text-highlighted">
+              University IS
+            </p>
+            <p class="text-xs text-muted">
+              Information system
+            </p>
           </div>
         </NuxtLink>
 
@@ -91,7 +95,9 @@ async function signOut() {
             <p class="text-sm font-medium text-highlighted">
               {{ session.firstName || session.email }}
             </p>
-            <p class="text-xs text-muted">{{ session.roles.join(', ') || 'User' }}</p>
+            <p class="text-xs text-muted">
+              {{ session.roles.join(', ') || 'User' }}
+            </p>
           </div>
           <UButton label="Log out" icon="i-lucide-log-out" color="neutral" variant="outline" @click="signOut" />
         </div>
@@ -139,7 +145,9 @@ async function signOut() {
     <div class="mx-auto flex max-w-[1600px]">
       <aside class="hidden w-72 shrink-0 border-r border-default bg-default lg:block">
         <nav class="sticky top-20 p-5" aria-label="Main navigation">
-          <p class="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-muted">Navigation</p>
+          <p class="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-muted">
+            Navigation
+          </p>
           <div class="space-y-1">
             <NuxtLink
               v-for="item in navigation"
