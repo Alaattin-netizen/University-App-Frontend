@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FetchError } from 'ofetch'
 import type { LoginRequest } from '~/types/auth'
+import { useAuth } from '~/composables/useAuth'
 
 definePageMeta({
   layout: false,
@@ -65,30 +66,6 @@ async function submit() {
     <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(0,220,130,0.16),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(14,116,144,0.12),transparent_35%)]" />
 
     <div class="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-default bg-default shadow-2xl lg:grid-cols-[0.9fr_1.1fr]">
-      <section class="hidden bg-primary p-10 text-inverted lg:flex lg:flex-col lg:justify-between">
-        <div>
-          <div class="mb-12 flex items-center gap-3">
-            <div class="grid size-11 place-items-center rounded-2xl bg-white/15">
-              <UIcon name="i-lucide-landmark" class="size-6" />
-            </div>
-            <span class="text-lg font-semibold tracking-tight">University IS</span>
-          </div>
-          <p class="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-inverted/70">
-            One campus, one place
-          </p>
-          <h1 class="max-w-sm text-4xl font-semibold tracking-tight">
-            Everything you need for university life.
-          </h1>
-          <p class="mt-5 max-w-sm text-base leading-7 text-inverted/75">
-            Access your courses, academic records, announcements, and campus services from one secure portal.
-          </p>
-        </div>
-        <div class="flex items-center gap-2 text-sm text-inverted/70">
-          <UIcon name="i-lucide-shield-check" class="size-4" />
-          Secure university access
-        </div>
-      </section>
-
       <main class="p-6 sm:p-10 lg:p-14">
         <div class="mx-auto max-w-md">
           <div class="mb-10 lg:hidden">
@@ -162,7 +139,6 @@ async function submit() {
 
             <div class="flex items-center justify-between gap-4 pt-1">
               <UCheckbox label="Remember me" />
-              <span class="text-sm text-muted">Need a reset? Contact your administrator.</span>
             </div>
 
             <UButton
@@ -175,11 +151,6 @@ async function submit() {
               :loading="isSubmitting"
             />
           </form>
-
-          <p class="mt-8 text-center text-sm text-muted">
-            Need help accessing your account?
-            Contact your university administrator.
-          </p>
         </div>
       </main>
     </div>

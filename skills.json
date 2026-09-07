@@ -3,14 +3,20 @@
     {
       "source": "antfu/skills",
       "skills": [
-        "nuxt",
         "pinia",
         "vue"
       ]
     },
     {
-      "source": "nuxt/ui",
+      "source": "jeffallan/claude-skills",
       "skills": [
+        "vue-expert"
+      ]
+    },
+    {
+      "source": "onmax/nuxt-skills",
+      "skills": [
+        "nuxt",
         "nuxt-ui"
       ]
     }
