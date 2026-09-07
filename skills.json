@@ -1,0 +1,18 @@
+{
+  "skills": [
+    {
+      "source": "antfu/skills",
+      "skills": [
+        "nuxt",
+        "pinia",
+        "vue"
+      ]
+    },
+    {
+      "source": "nuxt/ui",
+      "skills": [
+        "nuxt-ui"
+      ]
+    }
+  ]
+}
