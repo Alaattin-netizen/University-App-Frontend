@@ -3,20 +3,23 @@ import type { AuthResponse, LoginRequest } from '~/types/auth'
 import { useAuthStore } from '~/stores/auth'
 
 export function useAuth() {
-  const config = useRuntimeConfig()
   const authStore = useAuthStore()
+  const api = useApi()
 
   async function ensureSession() {
     if (authStore.user)
       return authStore.user
 
     try {
-      const response = await $fetch<AuthResponse>(`${config.public.apiBase}/Auth/me`, {
-        credentials: 'include',
+      const response = await api.get<AuthResponse>('/Auth/me', {
         headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
       })
-      authStore.setUser(response)
-      return response
+      if (response.error.value)
+        throw response.error.value
+      if (!response.data.value)
+        throw new Error('The session response was empty.')
+      authStore.setUser(response.data.value)
+      return response.data.value
     }
     catch (error) {
       if ((error as FetchError).statusCode !== 401)
@@ -28,21 +31,16 @@ export function useAuth() {
   }
 
   async function login(credentials: LoginRequest) {
-    const response = await $fetch<AuthResponse>(`${config.public.apiBase}/Auth/login`, {
-      method: 'POST',
-      body: credentials,
-      credentials: 'include',
-    })
+    const response = await api.post<AuthResponse>('/Auth/login', credentials)
 
+    if (!response)
+      throw new Error('The login response was empty.')
     authStore.setUser(response)
     return response
   }
 
   async function logout() {
-    await $fetch(`${config.public.apiBase}/Auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    })
+    await api.post('/Auth/logout')
     authStore.clearUser()
   }
 

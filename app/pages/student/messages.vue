@@ -11,14 +11,9 @@ useSeoMeta({
   title: 'Message instructors | University Information System',
 })
 
-const config = useRuntimeConfig()
-const apiOptions = {
-  baseURL: config.public.apiBase,
-  credentials: 'include' as const,
-  server: false,
-}
-const { data: instructors, status: instructorsStatus } = await useFetch<Instructor[]>('/students/me/instructors', apiOptions)
-const { data: messages, status: messagesStatus, refresh: refreshMessages } = await useFetch<StudentMessage[]>('/students/me/messages', apiOptions)
+const api = useApi()
+const { data: instructors, status: instructorsStatus } = await api.get<Instructor[]>('/students/me/instructors')
+const { data: messages, status: messagesStatus, refresh: refreshMessages } = await api.get<StudentMessage[]>('/students/me/messages')
 const form = reactive({ receiverInstructorId: undefined as number | undefined, subject: '', content: '' })
 const sending = ref(false)
 const notice = ref('')
@@ -40,14 +35,10 @@ async function sendMessage() {
   errorMessage.value = ''
   sending.value = true
   try {
-    await $fetch('/students/me/message', {
-      ...apiOptions,
-      method: 'POST',
-      body: {
-        receiverInstructorId: form.receiverInstructorId,
-        subject: form.subject.trim(),
-        content: form.content.trim(),
-      },
+    await api.post('/students/me/message', {
+      receiverInstructorId: form.receiverInstructorId,
+      subject: form.subject.trim(),
+      content: form.content.trim(),
     })
     form.subject = ''
     form.content = ''

@@ -13,14 +13,9 @@ useSeoMeta({
   title: 'My profile | University Information System',
 })
 
-const config = useRuntimeConfig()
 const { ensureSession } = useAuth()
-const apiOptions = {
-  baseURL: config.public.apiBase,
-  credentials: 'include' as const,
-  server: false,
-}
-const { data: profile, status } = await useFetch<UserProfile>('/users/me', apiOptions)
+const api = useApi()
+const { data: profile, status } = await api.get<UserProfile>('/users/me')
 const form = reactive({ firstName: '', lastName: '' })
 const saving = ref(false)
 const notice = ref('')
@@ -43,11 +38,7 @@ async function saveProfile() {
   errorMessage.value = ''
   saving.value = true
   try {
-    await $fetch('/users/me/profile', {
-      ...apiOptions,
-      method: 'PUT',
-      body: { firstName: form.firstName.trim(), lastName: form.lastName.trim() },
-    })
+    await api.put('/users/me/profile', { firstName: form.firstName.trim(), lastName: form.lastName.trim() })
     if (profile.value) {
       profile.value.firstName = form.firstName.trim()
       profile.value.lastName = form.lastName.trim()

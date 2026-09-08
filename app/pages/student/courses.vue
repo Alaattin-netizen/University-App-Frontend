@@ -12,25 +12,11 @@ useSeoMeta({
   description: 'Browse available course offerings and manage current enrollments.',
 })
 
-const config = useRuntimeConfig()
-const apiOptions = {
-  baseURL: config.public.apiBase,
-  credentials: 'include' as const,
-  server: false,
-}
+const api = useApi()
 
-const { data: availableCourses, status: availableStatus, refresh: refreshAvailable } = await useFetch<CourseOffering[]>(
-  '/students/me/open-courses',
-  apiOptions,
-)
-const { data: enrollmentData, status: enrollmentStatus, refresh: refreshEnrollments } = await useFetch<Record<string, unknown>[]>(
-  '/students/me/enrollments',
-  apiOptions,
-)
-const { data: schedule, status: scheduleStatus, refresh: refreshSchedule } = await useFetch<WeeklyScheduleItem[]>(
-  '/students/me/schedule',
-  apiOptions,
-)
+const { data: availableCourses, status: availableStatus, refresh: refreshAvailable } = await api.get<CourseOffering[]>('/students/me/open-courses')
+const { data: enrollmentData, status: enrollmentStatus, refresh: refreshEnrollments } = await api.get<Record<string, unknown>[]>('/students/me/enrollments')
+const { data: schedule, status: scheduleStatus, refresh: refreshSchedule } = await api.get<WeeklyScheduleItem[]>('/students/me/schedule')
 
 const enrollingId = ref<number | null>(null)
 const droppingId = ref<number | null>(null)
@@ -76,11 +62,7 @@ async function enroll(offering: CourseOffering) {
   actionError.value = ''
   enrollingId.value = offering.courseOfferingId
   try {
-    await $fetch('/students/me/enroll', {
-      ...apiOptions,
-      method: 'POST',
-      body: { courseOfferingId: offering.courseOfferingId },
-    })
+    await api.post('/students/me/enroll', { courseOfferingId: offering.courseOfferingId })
     await Promise.all([refreshAvailable(), refreshEnrollments(), refreshSchedule()])
   }
   catch (error) {
@@ -95,10 +77,7 @@ async function drop(enrollment: Enrollment) {
   actionError.value = ''
   droppingId.value = enrollment.enrollmentId
   try {
-    await $fetch(`/students/me/enrollments/${enrollment.enrollmentId}`, {
-      ...apiOptions,
-      method: 'DELETE',
-    })
+    await api.delete(`/students/me/enrollments/${enrollment.enrollmentId}`)
     await Promise.all([refreshAvailable(), refreshEnrollments(), refreshSchedule()])
   }
   catch (error) {

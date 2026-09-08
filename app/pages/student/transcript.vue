@@ -11,17 +11,9 @@ useSeoMeta({
   description: 'View your GPA and academic transcript.',
 })
 
-const config = useRuntimeConfig()
-const { data: gpa, status: gpaStatus } = await useFetch<GpaSummary>('/students/me/gpa', {
-  baseURL: config.public.apiBase,
-  credentials: 'include',
-  server: false,
-})
-const { data: transcript, status: transcriptStatus } = await useFetch<TranscriptEntry[]>('/students/me/transcript', {
-  baseURL: config.public.apiBase,
-  credentials: 'include',
-  server: false,
-})
+const api = useApi()
+const { data: gpa, status: gpaStatus } = await api.get<GpaSummary>('/students/me/gpa')
+const { data: transcript, status: transcriptStatus } = await api.get<TranscriptEntry[]>('/students/me/transcript')
 
 function formatScore(score: number | null | undefined) {
   return score === null || score === undefined ? '—' : score.toFixed(2)
