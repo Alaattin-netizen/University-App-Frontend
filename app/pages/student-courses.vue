@@ -197,7 +197,7 @@ async function drop(enrollment: Enrollment) {
         <UIcon name="i-lucide-loader-circle" class="size-5 animate-spin text-primary" />
       </div>
       <div v-else-if="schedule?.length" class="overflow-x-auto">
-        <table class="min-w-[900px] w-full table-fixed">
+        <table class="min-w-225 w-full table-fixed">
           <thead>
             <tr class="border-b border-default">
               <th

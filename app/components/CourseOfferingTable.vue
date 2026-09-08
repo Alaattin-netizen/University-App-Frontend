@@ -17,15 +17,27 @@ defineSlots<{
     <div v-if="loading" class="flex min-h-32 items-center justify-center">
       <UIcon name="i-lucide-loader-circle" class="size-5 animate-spin text-primary" />
     </div>
-    <table v-else class="min-w-[760px] w-full text-left">
+    <table v-else class="min-w-190] w-full text-left">
       <thead>
         <tr class="border-b border-default">
-          <th class="px-3 py-3 text-sm font-semibold text-highlighted">Course</th>
-          <th class="px-3 py-3 text-sm font-semibold text-highlighted">Name</th>
-          <th class="px-3 py-3 text-sm font-semibold text-highlighted">ECTS</th>
-          <th class="px-3 py-3 text-sm font-semibold text-highlighted">Schedule</th>
-          <th class="px-3 py-3 text-sm font-semibold text-highlighted">Instructor</th>
-          <th class="w-28 px-3 py-3 text-sm font-semibold text-highlighted">Action</th>
+          <th class="px-3 py-3 text-sm font-semibold text-highlighted">
+            Course
+          </th>
+          <th class="px-3 py-3 text-sm font-semibold text-highlighted">
+            Name
+          </th>
+          <th class="px-3 py-3 text-sm font-semibold text-highlighted">
+            ECTS
+          </th>
+          <th class="px-3 py-3 text-sm font-semibold text-highlighted">
+            Schedule
+          </th>
+          <th class="px-3 py-3 text-sm font-semibold text-highlighted">
+            Instructor
+          </th>
+          <th class="w-28 px-3 py-3 text-sm font-semibold text-highlighted">
+            Action
+          </th>
         </tr>
       </thead>
       <tbody>
