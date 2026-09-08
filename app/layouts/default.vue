@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import type { FetchError } from 'ofetch'
+import type { UserSession } from '~/stores/auth'
 import type { LoginRequest } from '~/types/auth'
+import { useAuthStore } from '~/stores/auth'
 
 const route = useRoute()
 const { login, logout, session } = useAuth()
+const authStore = useAuthStore()
+const config = useRuntimeConfig()
+
+const { data: currentUser } = await useFetch<UserSession>('/Auth/me', {
+  baseURL: config.public.apiBase,
+  credentials: 'include',
+  server: false,
+})
 
 const credentials = reactive<LoginRequest>({
   email: '',
@@ -13,7 +23,14 @@ const isSubmitting = ref(false)
 const loginError = ref('')
 const showPassword = ref(false)
 
-const roles = computed(() => new Set((session.value?.roles ?? []).map(role => role.toLowerCase())))
+watch(currentUser, (user) => {
+  if (user)
+    authStore.setUser(user)
+}, { immediate: true })
+
+const roles = computed(() => new Set(
+  (session.value?.roles ?? []).map(role => role.trim().toLowerCase().replace(/^role[._:-]?/, '')),
+))
 const navigation = computed(() => [
   {
     label: 'Overview',
@@ -27,7 +44,7 @@ const navigation = computed(() => [
     description: 'Manage courses assigned to you',
     icon: 'i-lucide-presentation',
     to: '/teacher-courses',
-    visible: roles.value.has('teacher'),
+    visible: roles.value.has('instructor'),
   },
   {
     label: 'Courses I take',
@@ -67,7 +84,7 @@ async function submitLogin() {
 }
 
 async function signOut() {
-  logout()
+  await logout()
   await navigateTo('/')
 }
 </script>
@@ -77,8 +94,8 @@ async function signOut() {
     <header class="sticky top-0 z-20 border-b border-default bg-default/95 shadow-sm backdrop-blur">
       <div class="mx-auto flex min-h-20 max-w-[1600px] items-center justify-between gap-6 px-4 py-3 sm:px-6 lg:px-8">
         <NuxtLink to="/" class="flex shrink-0 items-center gap-3">
-          <div class="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-            <UIcon name="i-lucide-landmark" class="size-6" />
+          <div class="grid size-11 place-items-center rounded-xl bg-primary/10">
+            <img src="/logo.png" alt="University IS logo" class="size-9 object-contain">
           </div>
           <div class="hidden sm:block">
             <p class="font-semibold text-highlighted">

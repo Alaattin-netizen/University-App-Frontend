@@ -9,6 +9,6 @@ export interface AuthResponse {
   lastName?: string
   email: string
   roles: string[]
-  token: string
+  token?: string
   expiresAt: string
 }

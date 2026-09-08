@@ -1,3 +1,10 @@
+<script setup lang="ts">
+definePageMeta({
+  middleware: 'role',
+  requiredRole: 'student',
+})
+</script>
+
 <template>
   <UCard>
     <template #header>

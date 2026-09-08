@@ -1,43 +1,56 @@
+import type { FetchError } from 'ofetch'
 import type { AuthResponse, LoginRequest } from '~/types/auth'
+import { useAuthStore } from '~/stores/auth'
 
 export function useAuth() {
   const config = useRuntimeConfig()
-  const token = useCookie<string | null>('uis_token', {
-    default: () => null,
-    maxAge: 60 * 60,
-    sameSite: 'lax',
-    secure: import.meta.env.PROD,
-  })
-  const sessionCookie = useCookie<AuthResponse | null>('uis_session', {
-    default: () => null,
-    maxAge: 60 * 60,
-    sameSite: 'lax',
-    secure: import.meta.env.PROD,
-  })
-  const session = useState<AuthResponse | null>('auth-session', () => sessionCookie.value)
+  const authStore = useAuthStore()
+
+  async function ensureSession() {
+    if (authStore.user)
+      return authStore.user
+
+    try {
+      const response = await $fetch<AuthResponse>(`${config.public.apiBase}/Auth/me`, {
+        credentials: 'include',
+        headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
+      })
+      authStore.setUser(response)
+      return response
+    }
+    catch (error) {
+      if ((error as FetchError).statusCode !== 401)
+        throw error
+
+      authStore.clearUser()
+      return null
+    }
+  }
 
   async function login(credentials: LoginRequest) {
     const response = await $fetch<AuthResponse>(`${config.public.apiBase}/Auth/login`, {
       method: 'POST',
       body: credentials,
+      credentials: 'include',
     })
 
-    token.value = response.token
-    sessionCookie.value = response
-    session.value = response
+    authStore.setUser(response)
     return response
   }
 
-  function logout() {
-    token.value = null
-    sessionCookie.value = null
-    session.value = null
+  async function logout() {
+    await $fetch(`${config.public.apiBase}/Auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    authStore.clearUser()
   }
 
   return {
+    ensureSession,
     login,
     logout,
-    session: readonly(session),
-    token: readonly(token),
+    session: computed(() => authStore.user),
+    isAuthenticated: computed(() => authStore.isAuthenticated),
   }
 }

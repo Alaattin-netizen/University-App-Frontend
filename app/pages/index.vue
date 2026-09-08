@@ -8,8 +8,8 @@ useSeoMeta({
 <template>
   <section class="rounded-3xl border border-default bg-default p-8 shadow-sm sm:p-12">
     <div class="max-w-2xl">
-      <div class="mb-6 grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
-        <UIcon name="i-lucide-landmark" class="size-7" />
+      <div class="mb-6 grid size-14 place-items-center rounded-2xl bg-primary/10">
+        <img src="/logo.png" alt="University IS logo" class="size-12 object-contain">
       </div>
       <p class="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
         University Information System
