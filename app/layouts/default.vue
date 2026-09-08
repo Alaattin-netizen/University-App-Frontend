@@ -53,6 +53,13 @@ const navigation = computed(() => [
     to: '/student-courses',
     visible: roles.value.has('student'),
   },
+  {
+    label: 'Grades & transcript',
+    description: 'View GPA and academic history',
+    icon: 'i-lucide-graduation-cap',
+    to: '/student-transcript',
+    visible: roles.value.has('student'),
+  },
 ].filter(item => item.visible))
 
 function getApiErrorMessage(error: unknown) {
