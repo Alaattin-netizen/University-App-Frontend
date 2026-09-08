@@ -60,6 +60,20 @@ const navigation = computed(() => [
     to: '/student-transcript',
     visible: roles.value.has('student'),
   },
+  {
+    label: 'Profile',
+    description: 'View and update your information',
+    icon: 'i-lucide-user-round',
+    to: '/profile',
+    visible: Boolean(session.value),
+  },
+  {
+    label: 'Message instructors',
+    description: 'Contact your instructors',
+    icon: 'i-lucide-messages-square',
+    to: '/student-messages',
+    visible: roles.value.has('student'),
+  },
 ].filter(item => item.visible))
 
 function getApiErrorMessage(error: unknown) {
