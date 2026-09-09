@@ -93,7 +93,7 @@ async function loadAnnouncements() {
   announcementsStatus.value = 'pending'
   try {
     const response = await api.get<Announcement[]>(
-      `/instructors/me/Responsible-Courses/${selectedOfferingId.value}/Announcements`,
+      `/instructors/me/Responsible-Courses/${selectedOfferingId.value}/Announcements?cacheBust=${Date.now()}`,
     )
     if (response.error.value)
       throw response.error.value
@@ -157,17 +157,13 @@ async function saveGrades() {
   notice.value = ''
   errorMessage.value = ''
   try {
+    const studentId = selectedStudent.value.studentId
     await api.post('/instructors/me/Enter-Grades', {
       enrollmentId: selectedStudent.value.enrollmentId,
       ...gradeForm,
     })
-    const updated = students.value.find(student => student.enrollmentId === selectedStudent.value?.enrollmentId)
-    if (updated) {
-      updated.midtermScore = gradeForm.midtermScore
-      updated.assignmentScore = gradeForm.assignmentScore
-      updated.finalScore = gradeForm.finalScore
-      updated.makeupScore = gradeForm.makeupScore
-    }
+    await selectCourse(selectedOfferingId.value!)
+    selectStudent(studentId)
     notice.value = 'Grades saved successfully.'
   }
   catch (error) {

@@ -6,13 +6,11 @@ export function useAuth() {
   const authStore = useAuthStore()
   const api = useApi()
 
-  async function ensureSession() {
-    if (authStore.user)
-      return authStore.user
-
+  async function loadSession() {
     try {
       const response = await api.get<AuthResponse>('/Auth/me', {
         headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
+        server: true,
       })
       if (response.error.value)
         throw response.error.value
@@ -28,6 +26,12 @@ export function useAuth() {
       authStore.clearUser()
       return null
     }
+  }
+
+  async function ensureSession() {
+    if (authStore.user)
+      return authStore.user
+    return loadSession()
   }
 
   async function login(credentials: LoginRequest) {
@@ -46,6 +50,7 @@ export function useAuth() {
 
   return {
     ensureSession,
+    refreshSession: loadSession,
     login,
     logout,
     session: computed(() => authStore.user),

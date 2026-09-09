@@ -7,6 +7,8 @@ interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: object
   immediate?: boolean
+  responseType?: 'json' | 'blob' | 'text' | 'arrayBuffer' | 'stream'
+  server?: boolean
 }
 
 export function useApi() {
@@ -20,7 +22,7 @@ export function useApi() {
       ...options,
       baseURL: config.public.apiBase,
       credentials: 'include',
-      server: false,
+      server: options.server ?? false,
     } as UseFetchOptions<unknown>) as AsyncData<T | null, Error | undefined>
   }
 
