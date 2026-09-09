@@ -25,6 +25,7 @@ export interface RegisteredStudent {
   gradePoint?: number | null
   attendanceCount: number
   totalClasses: number
+  isPresent?: boolean | null
 }
 
 export interface Announcement {
@@ -60,4 +61,10 @@ export interface AttendanceStudent {
   email: string
   attendanceCount: number
   totalClasses: number
+}
+
+export interface AttendanceImportResult {
+  created: number
+  updated: number
+  errors: string[]
 }

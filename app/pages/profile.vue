@@ -13,7 +13,7 @@ useSeoMeta({
   title: 'My profile | University Information System',
 })
 
-const { ensureSession } = useAuth()
+const { refreshSession } = useAuth()
 const api = useApi()
 const { data: profile, status } = await api.get<UserProfile>('/users/me')
 const form = reactive({ firstName: '', lastName: '' })
@@ -43,7 +43,7 @@ async function saveProfile() {
       profile.value.firstName = form.firstName.trim()
       profile.value.lastName = form.lastName.trim()
     }
-    await ensureSession()
+    await refreshSession()
     notice.value = 'Profile updated successfully.'
   }
   catch (error) {

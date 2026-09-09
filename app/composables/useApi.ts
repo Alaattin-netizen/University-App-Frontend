@@ -7,6 +7,7 @@ interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: object
   immediate?: boolean
+  responseType?: 'json' | 'blob' | 'text' | 'arrayBuffer' | 'stream'
 }
 
 export function useApi() {

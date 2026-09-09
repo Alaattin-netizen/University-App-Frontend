@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FetchError } from 'ofetch'
-import type { AttendanceOffering, AttendanceStudent } from '~/types/instructor'
+import type { AttendanceImportResult, AttendanceOffering, AttendanceStudent } from '~/types/instructor'
 
 definePageMeta({
   middleware: 'role',
@@ -23,6 +23,30 @@ const loadingStudents = ref(false)
 const saving = ref(false)
 const notice = ref('')
 const errorMessage = ref('')
+const importing = ref(false)
+const exporting = ref(false)
+const importInput = ref<HTMLInputElement | null>(null)
+const importResult = ref<AttendanceImportResult | null>(null)
+
+const selectedStudent = computed(() =>
+  students.value.find(student => String(student.studentId) === String(selectedStudentId.value)),
+)
+
+function syncSelectedStudentStatus() {
+  const student = selectedStudent.value
+  isPresent.value = student?.isPresent ?? true
+}
+
+function selectStudent(studentId: number | string | undefined) {
+  selectedStudentId.value = studentId === undefined ? undefined : Number(studentId)
+  syncSelectedStudentStatus()
+}
+
+function setAttendanceStatus(present: boolean) {
+  isPresent.value = present
+  if (selectedStudent.value)
+    selectedStudent.value.isPresent = present
+}
 
 function getErrorMessage(error: unknown) {
   const fetchError = error as FetchError<{ message?: string }>
@@ -58,11 +82,13 @@ async function selectOffering(courseOfferingId: number) {
   errorMessage.value = ''
   try {
     const response = await api.get<AttendanceStudent[]>(
-      `/instructors/me/Responsible-Courses/${courseOfferingId}/Registered-Students`,
+      `/instructors/me/Responsible-Courses/${courseOfferingId}/Registered-Students?date=${selectedDate.value}&cacheBust=${Date.now()}`,
     )
     if (response.error.value)
       throw response.error.value
     students.value = response.data.value ?? []
+    selectedStudentId.value = undefined
+    syncSelectedStudentStatus()
   }
   catch (error) {
     errorMessage.value = getErrorMessage(error)
@@ -86,6 +112,8 @@ async function saveAttendance() {
       date: selectedDate.value,
       isPresent: isPresent.value,
     })
+    if (selectedStudent.value)
+      selectedStudent.value.isPresent = isPresent.value
     notice.value = 'Attendance saved successfully.'
   }
   catch (error) {
@@ -93,6 +121,65 @@ async function saveAttendance() {
   }
   finally {
     saving.value = false
+  }
+}
+
+function downloadFile(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+async function exportAttendance() {
+  exporting.value = true
+  errorMessage.value = ''
+  try {
+    const response = await api.get<Blob>('/instructors/me/attendance/export', {
+      responseType: 'blob',
+      query: { cacheBust: Date.now() },
+    })
+    if (response.error.value)
+      throw response.error.value
+    if (!response.data.value)
+      throw new Error('The attendance export was empty.')
+    downloadFile(response.data.value, `attendance-${new Date().toISOString().slice(0, 10)}.xlsx`)
+  }
+  catch (error) {
+    errorMessage.value = getErrorMessage(error)
+  }
+  finally {
+    exporting.value = false
+  }
+}
+
+async function importAttendance(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file)
+    return
+
+  importing.value = true
+  importResult.value = null
+  notice.value = ''
+  errorMessage.value = ''
+  try {
+    const body = new FormData()
+    body.append('file', file)
+    const result = await api.post<AttendanceImportResult>('/instructors/me/attendance/import', body)
+    importResult.value = result ?? { created: 0, updated: 0, errors: [] }
+    notice.value = `Attendance import completed: ${importResult.value.created} created, ${importResult.value.updated} updated.`
+    if (selectedOfferingId.value)
+      await selectOffering(selectedOfferingId.value)
+  }
+  catch (error) {
+    errorMessage.value = getErrorMessage(error)
+  }
+  finally {
+    importing.value = false
   }
 }
 
@@ -116,8 +203,22 @@ await loadOfferings()
           <UInput v-model="selectedDate" type="date" />
         </UFormField>
         <UButton label="Load offerings" icon="i-lucide-search" :loading="loadingOfferings" @click="loadOfferings" />
+        <UButton label="Export Excel" icon="i-lucide-download" color="neutral" variant="outline" :loading="exporting" @click="exportAttendance" />
+        <UButton label="Import Excel" icon="i-lucide-upload" color="neutral" variant="outline" :loading="importing" @click="importInput?.click()" />
+        <input ref="importInput" class="hidden" type="file" accept=".xlsx" @change="importAttendance">
       </div>
+      <p class="mt-3 text-xs text-muted">
+        Excel columns: Date, Class, Student, Student Name, Attendance Status.
+      </p>
     </UCard>
+
+    <UAlert
+      v-if="importResult?.errors.length"
+      color="warning"
+      variant="subtle"
+      title="Some rows were not imported"
+      :description="importResult.errors.join(' ')"
+    />
 
     <UCard>
       <template #header>
@@ -152,18 +253,19 @@ await loadOfferings()
       <div v-else-if="students.length" class="space-y-5">
         <UFormField label="Student">
           <USelectMenu
-            v-model="selectedStudentId"
+            :model-value="selectedStudentId"
             :items="students.map(student => ({ label: `${student.fullName} · ${student.email}`, value: student.studentId }))"
             value-key="value"
             label-key="label"
             placeholder="Choose an enrolled student"
+            @update:model-value="selectStudent"
           />
         </UFormField>
         <div v-if="selectedStudentId" class="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-elevated p-4">
           <p class="text-sm text-muted">Was the student present?</p>
           <div class="flex gap-2">
-            <UButton label="Present" :variant="isPresent ? 'solid' : 'outline'" color="success" @click="isPresent = true" />
-            <UButton label="Absent" :variant="!isPresent ? 'solid' : 'outline'" color="error" @click="isPresent = false" />
+            <UButton label="Present" :variant="isPresent ? 'solid' : 'outline'" color="success" @click="setAttendanceStatus(true)" />
+            <UButton label="Absent" :variant="!isPresent ? 'solid' : 'outline'" color="error" @click="setAttendanceStatus(false)" />
             <UButton label="Save attendance" icon="i-lucide-save" :loading="saving" @click="saveAttendance" />
           </div>
         </div>

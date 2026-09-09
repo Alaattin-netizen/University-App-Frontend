@@ -6,10 +6,7 @@ export function useAuth() {
   const authStore = useAuthStore()
   const api = useApi()
 
-  async function ensureSession() {
-    if (authStore.user)
-      return authStore.user
-
+  async function loadSession() {
     try {
       const response = await api.get<AuthResponse>('/Auth/me', {
         headers: import.meta.server ? useRequestHeaders(['cookie']) : undefined,
@@ -30,6 +27,12 @@ export function useAuth() {
     }
   }
 
+  async function ensureSession() {
+    if (authStore.user)
+      return authStore.user
+    return loadSession()
+  }
+
   async function login(credentials: LoginRequest) {
     const response = await api.post<AuthResponse>('/Auth/login', credentials)
 
@@ -46,6 +49,7 @@ export function useAuth() {
 
   return {
     ensureSession,
+    refreshSession: loadSession,
     login,
     logout,
     session: computed(() => authStore.user),
